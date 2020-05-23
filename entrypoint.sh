@@ -3,7 +3,7 @@
 set -e
 
 if [ -z "$AWS_CF_DISTRIBUTION_ID" ]; then
-  echo "$AWS_CF_DISTRIBUTION_ID is not set. Quitting."
+  echo "AWS_CF_DISTRIBUTION_ID is not set. Quitting."
   exit 1
 fi
 
@@ -27,17 +27,16 @@ aws configure --profile cloudfront-update-action <<-EOF > /dev/null 2>&1
 ${AWS_ACCESS_KEY_ID}
 ${AWS_SECRET_ACCESS_KEY}
 ${AWS_REGION}
-text
+json
 EOF
 
-sh -c "jq"
+sh -c "aws cloudfront get-distribution-config --id ${AWS_CF_DISTRIBUTION_ID} --profile cloudfront-update-action > distr_config_${AWS_CF_DISTRIBUTION_ID}.json"
 
-# Sync using our dedicated profile and suppress verbose messages.
-# All other flags are optional via the `args:` directive.
-#sh -c "aws s3 sync ${SOURCE_DIR:-.} s3://${AWS_S3_BUCKET}/${DEST_DIR} \
-#              --profile s3-sync-action \
-#              --no-progress \
-#              ${ENDPOINT_APPEND} $*"
+etag=`cat distr_config_${AWS_CF_DISTRIBUTION_ID}.json | jq -r ".ETag"`
+sh -c "cat distr_config_${AWS_CF_DISTRIBUTION_ID}.json | jq  '.DistributionConfig | .Origins.Items[0].OriginPath=\"${NEW_VALUE}\"' > ${AWS_CF_DISTRIBUTION_ID}.json"
+
+sh -c "aws cloudfront update-distribution --distribution-config file://${AWS_CF_DISTRIBUTION_ID}.json --id ${AWS_CF_DISTRIBUTION_ID} --if-match ${etag}"
+
 
 # Clear out credentials after we're done.
 # We need to re-run `aws configure` with bogus input instead of
