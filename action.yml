@@ -1,0 +1,18 @@
+name: 'DynamoDB Local'
+description: 'Set up a DynamoDB Local db'
+author: 'Paweł Lekki'
+branding:
+  icon: 'database'
+  color: 'orange'
+inputs:
+  host port:
+    description: 'Port'
+    required: false
+    default: 8000
+  container port:
+    description: 'The port of container'
+    required: false
+    default: 8000
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
