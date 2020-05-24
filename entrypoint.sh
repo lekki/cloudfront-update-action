@@ -41,7 +41,7 @@ sh -c "aws cloudfront get-distribution-config --id ${AWS_CF_DISTRIBUTION_ID} --p
 etag=`cat distr_config_${GITHUB_SHA}.json | jq -r ".ETag"`
 sh -c "cat distr_config_${GITHUB_SHA}.json | jq  '.DistributionConfig | .Origins.Items[0].OriginPath=\"/${NEW_VALUE}\"' > ${GITHUB_SHA}.json"
 
-sh -c "aws cloudfront update-distribution --distribution-config file://${GITHUB_SHA}.json --id ${GITHUB_SHA} --if-match ${etag}"
+sh -c "aws cloudfront update-distribution --distribution-config file://${GITHUB_SHA}.json --id ${AWS_CF_DISTRIBUTION_ID} --if-match ${etag}"
 
 sh -c "rm ${GITHUB_SHA}.json distr_config_${GITHUB_SHA}.json"
 
