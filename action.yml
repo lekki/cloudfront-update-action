@@ -4,13 +4,6 @@ author: 'Paweł Lekki'
 branding:
   icon: 'refresh-cw'
   color: 'green'
-inputs:
-  aws cf distribution id:
-    description: 'AWS CF DIST ID'
-    required: true
-  new value:
-    description: 'New Value'
-    required: true
 runs:
   using: 'docker'
   image: 'Dockerfile'
