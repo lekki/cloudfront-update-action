@@ -33,7 +33,7 @@ EOF
 sh -c "aws cloudfront get-distribution-config --id ${AWS_CF_DISTRIBUTION_ID} --profile cloudfront-update-action > distr_config_${AWS_CF_DISTRIBUTION_ID}.json"
 
 etag=`cat distr_config_${AWS_CF_DISTRIBUTION_ID}.json | jq -r ".ETag"`
-sh -c "cat distr_config_${AWS_CF_DISTRIBUTION_ID}.json | jq  '.DistributionConfig | .Origins.Items[0].OriginPath=\"/${GITHUB_SHA}\"' > ${AWS_CF_DISTRIBUTION_ID}.json"
+sh -c "cat distr_config_${AWS_CF_DISTRIBUTION_ID}.json | jq  '.DistributionConfig | .Origins.Items[0].OriginPath=\"/${NEW_VALUE}\"' > ${AWS_CF_DISTRIBUTION_ID}.json"
 
 sh -c "aws cloudfront update-distribution --distribution-config file://${AWS_CF_DISTRIBUTION_ID}.json --id ${AWS_CF_DISTRIBUTION_ID} --if-match ${etag}"
 
