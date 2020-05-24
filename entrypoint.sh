@@ -27,7 +27,7 @@ if [ -z "$NEW_VALUE" ]; then
   exit 1
 fi
 
-
+sh -c "printenv"
 
 aws configure --profile cloudfront-update-action <<-EOF > /dev/null 2>&1
 ${AWS_ACCESS_KEY_ID}
