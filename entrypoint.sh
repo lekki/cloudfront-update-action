@@ -2,7 +2,7 @@
 
 set -e
 
-if [ -z "$INPUT_AWS_CF_DISTRIBUTION_ID" ]; then
+if [ -z "$AWS_CF_DISTRIBUTION_ID" ]; then
   echo "AWS_CF_DISTRIBUTION_ID is not set. Quitting."
   exit 1
 fi
@@ -22,7 +22,7 @@ if [ -z "$AWS_REGION" ]; then
   AWS_REGION="us-east-1"
 fi
 
-if [ -z "$INPUT_NEW_VALUE" ]; then
+if [ -z "$NEW_VALUE" ]; then
   echo "$NEW_VALUE is not set. Quitting."
   exit 1
 fi
@@ -36,10 +36,10 @@ ${AWS_REGION}
 json
 EOF
 
-sh -c "aws cloudfront get-distribution-config --id ${INPUT_AWS_CF_DISTRIBUTION_ID} --profile cloudfront-update-action > distr_config_${GITHUB_SHA}.json"
+sh -c "aws cloudfront get-distribution-config --id ${AWS_CF_DISTRIBUTION_ID} --profile cloudfront-update-action > distr_config_${GITHUB_SHA}.json"
 
 etag=`cat distr_config_${GITHUB_SHA}.json | jq -r ".ETag"`
-sh -c "cat distr_config_${GITHUB_SHA}.json | jq  '.DistributionConfig | .Origins.Items[0].OriginPath=\"/${INPUT_NEW_VALUE}\"' > ${GITHUB_SHA}.json"
+sh -c "cat distr_config_${GITHUB_SHA}.json | jq  '.DistributionConfig | .Origins.Items[0].OriginPath=\"/${NEW_VALUE}\"' > ${GITHUB_SHA}.json"
 
 sh -c "aws cloudfront update-distribution --distribution-config file://${GITHUB_SHA}.json --id ${GITHUB_SHA} --if-match ${etag}"
 
