@@ -36,13 +36,14 @@ ${AWS_REGION}
 json
 EOF
 
-sh -c "aws cloudfront get-distribution-config --id ${INPUT_AWS_CF_DISTRIBUTION_ID} --profile cloudfront-update-action > distr_config_${INPUT_AWS_CF_DISTRIBUTION_ID}.json"
+sh -c "aws cloudfront get-distribution-config --id ${INPUT_AWS_CF_DISTRIBUTION_ID} --profile cloudfront-update-action > distr_config_${GITHUB_SHA}.json"
 
-etag=`cat distr_config_${INPUT_AWS_CF_DISTRIBUTION_ID}.json | jq -r ".ETag"`
-sh -c "cat distr_config_${INPUT_AWS_CF_DISTRIBUTION_ID}.json | jq  '.DistributionConfig | .Origins.Items[0].OriginPath=\"/${INPUT_NEW_VALUE}\"' > ${INPUT_AWS_CF_DISTRIBUTION_ID}.json"
+etag=`cat distr_config_${GITHUB_SHA}.json | jq -r ".ETag"`
+sh -c "cat distr_config_${GITHUB_SHA}.json | jq  '.DistributionConfig | .Origins.Items[0].OriginPath=\"/${INPUT_NEW_VALUE}\"' > ${GITHUB_SHA}.json"
 
-sh -c "aws cloudfront update-distribution --distribution-config file://${INPUT_AWS_CF_DISTRIBUTION_ID}.json --id ${INPUT_AWS_CF_DISTRIBUTION_ID} --if-match ${etag}"
+sh -c "aws cloudfront update-distribution --distribution-config file://${GITHUB_SHA}.json --id ${GITHUB_SHA} --if-match ${etag}"
 
+sh -c "rm ${GITHUB_SHA}.json distr_config_${GITHUB_SHA}.json"
 
 # Clear out credentials after we're done.
 # We need to re-run `aws configure` with bogus input instead of
