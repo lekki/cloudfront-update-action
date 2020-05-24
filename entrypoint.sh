@@ -2,7 +2,7 @@
 
 set -e
 
-if [ -z "$AWS_CF_DISTRIBUTION_ID" ]; then
+if [ -z "$INPUT_AWS_CF_DISTRIBUTION_ID" ]; then
   echo "AWS_CF_DISTRIBUTION_ID is not set. Quitting."
   exit 1
 fi
@@ -22,6 +22,12 @@ if [ -z "$AWS_REGION" ]; then
   AWS_REGION="us-east-1"
 fi
 
+if [ -z "$INPUT_NEW_VALUE" ]; then
+  echo "$NEW_VALUE is not set. Quitting."
+  exit 1
+fi
+
+
 
 aws configure --profile cloudfront-update-action <<-EOF > /dev/null 2>&1
 ${AWS_ACCESS_KEY_ID}
@@ -30,12 +36,12 @@ ${AWS_REGION}
 json
 EOF
 
-sh -c "aws cloudfront get-distribution-config --id ${AWS_CF_DISTRIBUTION_ID} --profile cloudfront-update-action > distr_config_${AWS_CF_DISTRIBUTION_ID}.json"
+sh -c "aws cloudfront get-distribution-config --id ${INPUT_AWS_CF_DISTRIBUTION_ID} --profile cloudfront-update-action > distr_config_${INPUT_AWS_CF_DISTRIBUTION_ID}.json"
 
-etag=`cat distr_config_${AWS_CF_DISTRIBUTION_ID}.json | jq -r ".ETag"`
-sh -c "cat distr_config_${AWS_CF_DISTRIBUTION_ID}.json | jq  '.DistributionConfig | .Origins.Items[0].OriginPath=\"/${NEW_VALUE}\"' > ${AWS_CF_DISTRIBUTION_ID}.json"
+etag=`cat distr_config_${INPUT_AWS_CF_DISTRIBUTION_ID}.json | jq -r ".ETag"`
+sh -c "cat distr_config_${INPUT_AWS_CF_DISTRIBUTION_ID}.json | jq  '.DistributionConfig | .Origins.Items[0].OriginPath=\"/${INPUT_NEW_VALUE}\"' > ${INPUT_AWS_CF_DISTRIBUTION_ID}.json"
 
-sh -c "aws cloudfront update-distribution --distribution-config file://${AWS_CF_DISTRIBUTION_ID}.json --id ${AWS_CF_DISTRIBUTION_ID} --if-match ${etag}"
+sh -c "aws cloudfront update-distribution --distribution-config file://${INPUT_AWS_CF_DISTRIBUTION_ID}.json --id ${INPUT_AWS_CF_DISTRIBUTION_ID} --if-match ${etag}"
 
 
 # Clear out credentials after we're done.
